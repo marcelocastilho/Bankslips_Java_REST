@@ -1,0 +1,12 @@
+-------------------------------------------------------------------------------
+Test set: com.bankslips.rest.CreateBankSlipTests
+-------------------------------------------------------------------------------
+Tests run: 3, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 1.391 s <<< FAILURE! - in com.bankslips.rest.CreateBankSlipTests
+CreateBankSlipSuccess(com.bankslips.rest.CreateBankSlipTests)  Time elapsed: 0.041 s  <<< FAILURE!
+java.lang.AssertionError: Status expected:<200> but was:<404>
+	at com.bankslips.rest.CreateBankSlipTests.CreateBankSlipSuccess(CreateBankSlipTests.java:77)
+
+CreateBankSlipErrorRquest(com.bankslips.rest.CreateBankSlipTests)  Time elapsed: 0.008 s  <<< FAILURE!
+java.lang.AssertionError: Status expected:<400> but was:<404>
+	at com.bankslips.rest.CreateBankSlipTests.CreateBankSlipErrorRquest(CreateBankSlipTests.java:92)
+

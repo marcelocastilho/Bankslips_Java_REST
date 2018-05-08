@@ -1,0 +1,6 @@
+com\bankslips\rest\PayBankSlipTest.class
+com\bankslips\rest\CancelBankSlipTest.class
+com\bankslips\rest\GetBankSlipDetailsTest.class
+com\bankslips\rest\BankSlipsApplicationTests.class
+com\bankslips\tests\functionaltests\FunctionalBankSlipsTests.class
+com\bankslips\rest\GetBankSlipsTest.class

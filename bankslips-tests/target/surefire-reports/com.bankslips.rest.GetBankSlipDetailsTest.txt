@@ -1,0 +1,11 @@
+-------------------------------------------------------------------------------
+Test set: com.bankslips.rest.GetBankSlipDetailsTest
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.018 s <<< FAILURE! - in com.bankslips.rest.GetBankSlipDetailsTest
+GetBankSlipDetails(com.bankslips.rest.GetBankSlipDetailsTest)  Time elapsed: 0.018 s  <<< FAILURE!
+java.lang.AssertionError: 
+JSON path "$.id"
+Expected: is "84e8adbf-1a14-403b-ad73-d78ae19b59bf"
+     but: was null
+	at com.bankslips.rest.GetBankSlipDetailsTest.GetBankSlipDetails(GetBankSlipDetailsTest.java:31)
+
