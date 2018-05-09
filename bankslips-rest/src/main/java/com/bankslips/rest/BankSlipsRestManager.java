@@ -2,8 +2,8 @@ package com.bankslips.rest;
 
 import static org.junit.Assert.assertNotNull;
 
-import java.util.Calendar;
-import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.assertj.core.util.Arrays;
 import org.slf4j.Logger;
@@ -31,6 +31,7 @@ import com.bankslips.jpa.entities.BankSlipJPAEntity;
 import com.bankslips.jpa.services.BankSlipsService;
 import com.bankslips.rest.enuns.RESTErrorMessages;
 import com.bankslips.rest.enuns.RESTSuccessMessages;
+import com.bankslips.rest.exceptions.BankSlipNotFoundException;
 import com.bankslips.rest.exceptions.BankSlipsValidationException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -65,40 +66,37 @@ public class BankSlipsRestManager {
 			bankSlip.setStatus(StatusEnum.PENDING.toString());
 			BankSlipJPAEntity bankSlipSaved = bankSlipsService.persist(EntitiesTransformation.convertEntityToJPAEntity(bankSlip));
 
-			out = ResponseEntity.status(HttpStatus.OK).body(RESTSuccessMessages.CREATE_BANKSLIP_SUCCESS);
+			out = ResponseEntity.status(HttpStatus.OK).body(RESTSuccessMessages.CREATE_BANKSLIP_SUCCESS.getMessage());
+			
 			log.info("New bankSlip with id: " + bankSlipSaved.getId());
+			
 		} catch (BankSlipsValidationException e) {
 			out = ResponseEntity.status(e.getHttpStatus()).body(e.getMessage());
-			log.info("Error creating a new bankSlip, error: " + e.getMessage());
+			log.error("Error creating a new bankSlip, error: " + e.getMessage());
 		}
 
-		
 		return out; 
-
-		/*		201 : Bankslip created
-		● 400 : Bankslip not provided in the request body
-		● 422 : Invalid bankslip provided.The possible reasons are:
-		○ A field of the provided bankslip was null or with invalid values
-		 */
 	}
 
 	@GetMapping("/{id}")
-	public BankSlip getBankSlipDetails(@PathVariable(value="id") String id) {
+	public List<BankSlipJPAEntity> getBankSlipDetails(@PathVariable(value="id") String id) {
 		log.info("Finding bankSlip by id : " + id + ".");
-
+		List<BankSlipJPAEntity> allBankSLips = this.bankSlipsService.getAll();
 
 		log.info("Found bankSlip with id: " + id + ".");
-		return new BankSlip(new Date(Calendar.getInstance().getTimeInMillis()), 100000, "Marcelo Castilho");
+		return allBankSLips;
 	}
 
 	@GetMapping
-	public BankSlip getBankSlips() {		
+	public ResponseEntity<Object> getBankSlips() {		
 		log.info("Finding all bankSlips.");
-		//List<BankSlipJPAEntity> bankSlips = null;
-		//this.empresaService.getAll().stream().map(EmpresaResource::new)				.collect(Collectors.toList());
-		long count = 90;
-		log.info("Found " +  count + " bankSlips.");
-		return new BankSlip(new Date(Calendar.getInstance().getTimeInMillis()), 100000, "Marcelo Castilho");
+		ResponseEntity<Object> out = null;
+		
+		List<BankSlipJPAEntity> bankSlips = this.bankSlipsService.getAll().stream().collect(Collectors.toList());
+		out = ResponseEntity.status(HttpStatus.OK).body(bankSlips);
+		
+		log.info("Found " +  bankSlips.size() + " bankSlips.");
+		return out;
 	}
 
 	@PutMapping("/{id}/pay")
@@ -111,12 +109,39 @@ public class BankSlipsRestManager {
 	}
 
 	@DeleteMapping("/{id}")
-	public String cancelBankSlip(@PathVariable(value="id") String id) {
+	public ResponseEntity<Object> cancelBankSlip(@PathVariable(value="id") String id) {
 		log.info("Canceling bankSlip with id " + id + ".");
-
-		log.info("BankSLip " + id + " Canceled.");
-		return "Pedido de id: " + id + " Cancelado!";
+		
+		ResponseEntity<Object> out = null;
+		
+		try{
+			BankSlipJPAEntity bankSLip = this.bankSlipsService.findById(id).orElseThrow(() -> new BankSlipNotFoundException(RESTErrorMessages.CANCEL_BANKSLIP_NOT_FOUND.getMessage() + " " + id, HttpStatus.NOT_FOUND ));
+		
+			bankSLip.setStatus(StatusEnum.CANCELED.toString());
+			bankSlipsService.persist(bankSLip);
+			
+			out = ResponseEntity.status(HttpStatus.OK).body(RESTSuccessMessages.CANCEL_BANKSLIP_SUCCESS.getMessage());
+			log.info("BankSLip " + id + " canceled.");
+			
+		}catch(BankSlipNotFoundException e) {
+			out = ResponseEntity.status(e.getHttpStatus()).body(e.getMessage());
+			log.error("Error canceling a bankSlip, error: " + e.getMessage());
+		}
+		
+		return out;
 	}
+	
+	/**
+	 * 
+	 * @return Resources<EmpresaResource>
+	 */
+	/*@GetMapping
+	public Resources<EmpresaResource> readEmpresas() {
+		log.info("Finding paied bankslips ");
+		List<BankSlip> paiedBankSLip = this.bankSlipsService.getAll().stream().map(BankSlip::new)
+				.collect(Collectors.toList());
+		return new Resources<>(paiedBankSLip);
+	}*/
 
 	/**
 	 * This method verify the request content of rest operation createBankSlip

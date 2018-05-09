@@ -1,7 +1,9 @@
 package com.bankslips.rest.enuns;
 
 public enum RESTSuccessMessages {
-	CREATE_BANKSLIP_SUCCESS("Bankslip created");
+	CREATE_BANKSLIP_SUCCESS("Bankslip created"),
+	CANCEL_BANKSLIP_SUCCESS("Bankslip canceled");
+	
 	
 	private String message;
 	

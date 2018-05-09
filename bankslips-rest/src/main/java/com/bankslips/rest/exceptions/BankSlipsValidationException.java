@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
  * This exceptionClass will be used when the request is not correct 
  */
 
-public class BankSlipsValidationException extends Exception {
+public class BankSlipsValidationException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;
 	

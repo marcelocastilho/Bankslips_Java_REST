@@ -24,7 +24,7 @@ public class EntitiesTransformation {
 		jpaEntity.setCustomer(entity.getCustomer());
 		jpaEntity.setStatus(entity.getStatus());
 		if(entity.getId().isPresent()) {
-			jpaEntity.setId(entity.getId().toString());
+			jpaEntity.setId(entity.getId().get());
 		}else {
 			jpaEntity.setId(null);
 		}

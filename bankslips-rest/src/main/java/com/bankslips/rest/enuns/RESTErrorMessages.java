@@ -3,8 +3,10 @@ package com.bankslips.rest.enuns;
 public enum RESTErrorMessages {
 	CREATE_BANKSLIP_INVALID_REQUEST("Bankslip not provided in the request body"),
 	CREATE_BANKSLIP_INVALID_BANKSLIP_DATA("Invalid bankslip provided.The possible reasons are:\r\n" + 
-			"○ A field of the provided bankslip was null or with invalid values");
-
+			"○ A field of the provided bankslip was null or with invalid values"),
+	CANCEL_BANKSLIP_NOT_FOUND("Bankslip not found with the specified id");
+	
+	
 	private String message;
 
 	RESTErrorMessages(String message) {

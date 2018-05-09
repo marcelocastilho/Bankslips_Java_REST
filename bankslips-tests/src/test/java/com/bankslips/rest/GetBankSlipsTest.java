@@ -1,8 +1,13 @@
 package com.bankslips.rest;
 
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.Date;
+import java.util.Optional;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,7 +19,13 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import com.bankslips.entities.BankSlip;
+import com.bankslips.entities.StatusEnum;
+import com.bankslips.entities.datatransformation.EntitiesTransformation;
+import com.bankslips.jpa.entities.BankSlipJPAEntity;
+import com.bankslips.jpa.services.BankSlipsService;
 import com.bankslips.main.SprintBootStarter;
+import com.bankslips.rest.enuns.RESTSuccessMessages;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes=SprintBootStarter.class)
@@ -23,14 +34,41 @@ public class GetBankSlipsTest {
 
 	@Autowired
 	private MockMvc mvc;
+	
+	@Autowired
+	private BankSlipsService bankSlipsService;
 
+	private static final String URL_BASE = "http://localhost:8080/bankslips/";
+	private static final String CUSTOMER = "Teste getAll bankSlip";
+	private static final String ID_TO_CREATE = "test-find-all-aaaa-bbbb";
+	private static final String ID_TO_CREATE_2 = "test-find-all-cccc-dddd";
+	
 	@Test
 	public void GetBankSlips() throws Exception {
-		mvc.perform(MockMvcRequestBuilders.get("http://localhost:8080/bankslips")
-		.accept(MediaType.APPLICATION_JSON))
+		//Creating two new bankSlips
+		BankSlipJPAEntity bankSlipJPAEntity1 = bankSlipsService.persist(EntitiesTransformation.convertEntityToJPAEntity(createBankSlipEntity(ID_TO_CREATE, new Date(), CUSTOMER, StatusEnum.PENDING.toString(), 111000L)));
+		BankSlipJPAEntity bankSlipJPAEntity2 = bankSlipsService.persist(EntitiesTransformation.convertEntityToJPAEntity(createBankSlipEntity(ID_TO_CREATE_2, new Date(), CUSTOMER, StatusEnum.PENDING.toString(), 111000L)));
+		
+		//calling and validating the rest method response
+		mvc.perform(MockMvcRequestBuilders.get(URL_BASE)
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON))
 		.andExpect(status().isOk())
-		.andExpect(jsonPath("$.id", is("84e8adbf-1a14-403b-ad73-d78ae19b59bf")));
+		.andExpect(jsonPath("$.data.bankslip.id").value(ID_TO_CREATE));
+
+		bankSlipsService.delete(bankSlipJPAEntity1);
+		bankSlipsService.delete(bankSlipJPAEntity2);
 
 	}
-		
+	
+	private BankSlip createBankSlipEntity(String idToCancel, Date dueDate, String customer, String status, long totalInCents) {
+		BankSlip BankSlip = new BankSlip();
+		BankSlip.setId(Optional.of(idToCancel));
+		BankSlip.setDueDate(dueDate);
+		BankSlip.setCustomer(customer);
+		BankSlip.setStatus(status);
+		BankSlip.setTotalInCents(totalInCents);
+		return BankSlip;
+	}	
+
 }

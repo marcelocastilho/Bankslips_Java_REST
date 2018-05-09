@@ -36,4 +36,13 @@ public interface BankSlipsService {
 	 */
 	BankSlipJPAEntity persist(BankSlipJPAEntity bankSlip);
 	
+	/**
+	 * 
+	 * Delete a BankSlip
+	 * 
+	 * @param bankSlip
+	 * @return BankSlip
+	 */
+	 void delete(BankSlipJPAEntity bankSlip);
+	
 }

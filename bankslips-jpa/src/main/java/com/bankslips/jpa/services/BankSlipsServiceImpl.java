@@ -40,5 +40,10 @@ public class BankSlipsServiceImpl implements BankSlipsService {
 			bankSlip.setId(java.util.UUID.randomUUID().toString());			
 		}				
 		return this.bankSlipRepository.save(bankSlip);
+	}
+
+	@Override
+	public void delete(BankSlipJPAEntity bankSlip) {
+		this.bankSlipRepository.delete(bankSlip);
 	}	
 }
