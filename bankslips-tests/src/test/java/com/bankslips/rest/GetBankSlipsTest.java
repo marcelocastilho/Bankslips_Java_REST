@@ -1,10 +1,11 @@
 package com.bankslips.rest;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.hamcrest.Matchers.containsString;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 import org.junit.Test;
@@ -35,7 +36,7 @@ public class GetBankSlipsTest {
 	@Autowired
 	private BankSlipsService bankSlipsService;
 	
-	private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
 	private static final String URL_BASE = "http://localhost:8080/bankslips/";
 	private static final String CUSTOMER = "Teste getAll bankSlip";
@@ -45,29 +46,30 @@ public class GetBankSlipsTest {
 	@Test
 	public void GetBankSlips() throws Exception {
 		//Creating two new bankSlips
-		BankSlipJPAEntity bankSlipJPAEntity1 = bankSlipsService.persist(EntitiesTransformation.convertPOJOEntityToJPAEntity(createBankSlipEntity(ID_TO_CREATE, new Date(), CUSTOMER, StatusEnum.PENDING.toString(), 111000L)));
-		BankSlipJPAEntity bankSlipJPAEntity2 = bankSlipsService.persist(EntitiesTransformation.convertPOJOEntityToJPAEntity(createBankSlipEntity(ID_TO_CREATE_2, new Date(), CUSTOMER, StatusEnum.PENDING.toString(), 111000L)));
+		BankSlipJPAEntity bankSlipJPAEntity1 = bankSlipsService.persist(EntitiesTransformation.convertPOJOEntityToJPAEntity(createBankSlipEntity(ID_TO_CREATE, LocalDate.now(), CUSTOMER, 111000L, StatusEnum.PENDING.toString())));
+		BankSlipJPAEntity bankSlipJPAEntity2 = bankSlipsService.persist(EntitiesTransformation.convertPOJOEntityToJPAEntity(createBankSlipEntity(ID_TO_CREATE_2, LocalDate.now(), CUSTOMER, 111000L, StatusEnum.PENDING.toString())));
 		
 		//calling and validating the rest method response
 		mvc.perform(MockMvcRequestBuilders.get(URL_BASE)
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON))
 		.andExpect(status().isOk())
-		.andExpect(jsonPath("$.data.bankslip.id").value(ID_TO_CREATE));
-
+		.andExpect(content().string(containsString(ID_TO_CREATE)))
+		.andExpect(content().string(containsString(ID_TO_CREATE_2)));
+		
 		bankSlipsService.delete(bankSlipJPAEntity1);
 		bankSlipsService.delete(bankSlipJPAEntity2);
 
 	}
 	
-	private BankSlip createBankSlipEntity(String idToCancel, Date dueDate, String customer, String status, long totalInCents) {
+	private BankSlip createBankSlipEntity(String id, LocalDate dueDate, String customer, long totalInCents, String status) {
 		BankSlip BankSlip = new BankSlip();
-		BankSlip.setId(Optional.of(idToCancel));
-		BankSlip.setDueDate(dateFormat.format(dueDate));
+		BankSlip.setId(Optional.of(id));
+		BankSlip.setDueDate(dateFormatter.format(dueDate));
 		BankSlip.setCustomer(customer);
-		BankSlip.setStatus(status);
 		BankSlip.setTotalInCents(totalInCents);
+		BankSlip.setStatus(status);
 		return BankSlip;
-	}	
+	}
 
 }

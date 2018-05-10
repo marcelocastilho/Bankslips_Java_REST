@@ -6,9 +6,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 import org.assertj.core.util.Arrays;
@@ -28,6 +27,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import com.bankslips.entities.BankSlip;
+import com.bankslips.entities.StatusEnum;
 import com.bankslips.main.SprintBootStarter;
 import com.bankslips.rest.enuns.RESTErrorMessages;
 
@@ -44,7 +44,7 @@ public class CreateBankSlipTests{
 
 	private HttpMessageConverter<Object> httpMessageConverter;
 
-	private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 	
 	private static final String URL_BASE = "http://localhost:8080/bankslips";
 	private static final String CUSTOMER = "Teste create bankSlip";
@@ -70,7 +70,7 @@ public class CreateBankSlipTests{
 	public void CreateBankSlipSuccess() throws Exception {
 
 		//Creating a correct bankSlip object
-		String bankSlipJson = convertInJason(createBankSlipEntity(null, Calendar.getInstance().getTime(), CUSTOMER, 111000L));
+		String bankSlipJson = convertInJason(createBankSlipEntity(null, LocalDate.now(), CUSTOMER, 111000L, StatusEnum.PENDING.toString()));
 
 		//calling and validating the rest method response
 		mvc.perform(MockMvcRequestBuilders.post(URL_BASE)
@@ -106,7 +106,7 @@ public class CreateBankSlipTests{
 	public void GetBankSlipDetails() throws Exception {
 		
 		//Creating a correct bankSlip object
-		String bankSlipJson = convertInJason(createBankSlipEntity(null, null, CUSTOMER, 111000L));
+		String bankSlipJson = convertInJason(createBankSlipEntity(null, null, CUSTOMER, 111000L, null));
 
 		//calling and validating the rest method response
 				mvc.perform(MockMvcRequestBuilders.post(URL_BASE)
@@ -117,12 +117,14 @@ public class CreateBankSlipTests{
 				.andExpect(content().string(RESTErrorMessages.CREATE_BANKSLIP_INVALID_BANKSLIP_DATA.getMessage()));
 	}
 	
-	private BankSlip createBankSlipEntity(Optional<String> id, Date dueDate, String customer, long totalInCents) {
+	private BankSlip createBankSlipEntity(Optional<String> id, LocalDate dueDate, String customer, long totalInCents, String status) {
 		BankSlip BankSlip = new BankSlip();
 		BankSlip.setId(id);
-		BankSlip.setDueDate(dateFormat.format(dueDate));
+		if(dueDate != null)
+			BankSlip.setDueDate(dateFormatter.format(dueDate));
 		BankSlip.setCustomer(customer);
 		BankSlip.setTotalInCents(totalInCents);
+		BankSlip.setStatus(status);
 		return BankSlip;
 	}
 

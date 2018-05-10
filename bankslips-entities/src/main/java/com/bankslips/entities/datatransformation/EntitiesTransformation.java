@@ -1,22 +1,17 @@
 package com.bankslips.entities.datatransformation;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
-import org.springframework.http.HttpStatus;
-
 import com.bankslips.entities.BankSlip;
-import com.bankslips.entities.datatransformation.exception.BankSlipsGenericException;
 import com.bankslips.jpa.entities.BankSlipJPAEntity;
 
 public class EntitiesTransformation {
-	
-	
+		
 	public static BankSlip convertJPAEntityToPOJOEntity(BankSlipJPAEntity jpaEntity) {
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 		BankSlip bankSlipEntity = new BankSlip();
-		bankSlipEntity.setDueDate(dateFormat.format(jpaEntity.getDueDate()));
+		bankSlipEntity.setDueDate(jpaEntity.getDueDate().format(dateFormatter));
 		bankSlipEntity.setTotalInCents(jpaEntity.getTotalInCents());
 		bankSlipEntity.setCustomer(jpaEntity.getCustomer());
 		bankSlipEntity.setStatus(jpaEntity.getStatus());
@@ -25,12 +20,11 @@ public class EntitiesTransformation {
 	}
 
 	public static BankSlipJPAEntity convertPOJOEntityToJPAEntity(BankSlip entity) {
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 		BankSlipJPAEntity jpaEntity = new BankSlipJPAEntity();
-		try {
-			jpaEntity.setDueDate(dateFormat.parse(entity.getDueDate()));
-		} catch (ParseException e) {
-			throw new BankSlipsGenericException("BankSlip tranformation DueDate Exception, format invalid", HttpStatus.INTERNAL_SERVER_ERROR);
+		if(entity.getDueDateDateFormat().isPresent()) {
+			jpaEntity.setDueDate(entity.getDueDateDateFormat().get());
+		} else{
+			jpaEntity.setDueDate(null);
 		}
 		jpaEntity.setTotalInCents(entity.getTotalInCents());
 		jpaEntity.setCustomer(entity.getCustomer());

@@ -1,5 +1,7 @@
 package com.bankslips.entities;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 import javax.validation.constraints.NotNull;
@@ -11,12 +13,15 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 @JsonInclude(Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class BankSlip {
-
+	
+	DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+	
 	private Optional<String> id = Optional.empty();
 	@NotNull
 	private String dueDate;
 	@NotNull
-	private long totalInCents;
+	private long totalInCents;	
+	private long fine;
 	@NotNull
 	private String customer;
 	@NotNull
@@ -43,6 +48,7 @@ public class BankSlip {
 	public String getDueDate() {
 		return dueDate;
 	}
+	
 	public void setDueDate(String dueDate) {
 		this.dueDate = dueDate;
 	}
@@ -66,6 +72,23 @@ public class BankSlip {
 	}
 	public void setStatus(String status) {
 		this.status = status;
+	}
+	
+	public long getFine() {
+		return fine;
+	}
+
+	public void setFine(long fine) {
+		this.fine = fine;
+	}
+	
+	public Optional<LocalDate> getDueDateDateFormat() {
+	
+		Optional<LocalDate> localDate = null;
+		if(dueDate != null) {
+			localDate = Optional.of(LocalDate.parse(dueDate,dateFormatter));
+		}
+		return localDate;
 	}
 
 	@Override

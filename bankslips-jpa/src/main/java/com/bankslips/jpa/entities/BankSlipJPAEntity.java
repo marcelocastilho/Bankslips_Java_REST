@@ -1,7 +1,7 @@
 package com.bankslips.jpa.entities;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDate;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -19,7 +19,7 @@ public class BankSlipJPAEntity implements Serializable {
 	private String id;
 	
 	@Column(name = "due_date", nullable = false)
-	private Date dueDate;
+	private LocalDate dueDate;
 	
 	@Column(name = "total_in_cents", nullable = false)
 	private long totalInCents;
@@ -30,7 +30,7 @@ public class BankSlipJPAEntity implements Serializable {
 	@Column(name = "status", nullable = false)
 	private String status;
 			
-	public BankSlipJPAEntity( Date dueDate, long totalInCents, String customer, String status) {
+	public BankSlipJPAEntity( LocalDate dueDate, long totalInCents, String customer, String status) {
 		this.dueDate = dueDate;
 		this.totalInCents = totalInCents;
 		this.customer = customer;
@@ -47,10 +47,10 @@ public class BankSlipJPAEntity implements Serializable {
 		this.id = id;
 	}
 
-	public Date getDueDate() {
+	public LocalDate getDueDate() {
 		return dueDate;
 	}
-	public void setDueDate(Date dueDate) {
+	public void setDueDate(LocalDate dueDate) {
 		this.dueDate = dueDate;
 	}
 

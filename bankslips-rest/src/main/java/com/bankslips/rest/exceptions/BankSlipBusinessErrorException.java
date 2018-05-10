@@ -2,13 +2,13 @@ package com.bankslips.rest.exceptions;
 
 import org.springframework.http.HttpStatus;
 
-public class BankSlipNotFoundException extends Exception {
+public class BankSlipBusinessErrorException extends Exception {
 		
 	private static final long serialVersionUID = 1L;
 	
 	HttpStatus httpStatus = null;
 
-	public BankSlipNotFoundException(String errorMessage, HttpStatus httpStatus) {
+	public BankSlipBusinessErrorException(String errorMessage, HttpStatus httpStatus) {
 		super(errorMessage);
 		this.httpStatus = httpStatus;	
 	}

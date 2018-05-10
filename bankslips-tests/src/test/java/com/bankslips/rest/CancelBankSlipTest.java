@@ -1,13 +1,13 @@
 package com.bankslips.rest;
 
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
-
-import static org.hamcrest.Matchers.*;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,7 +39,7 @@ public class CancelBankSlipTest {
 	@Autowired
 	private BankSlipsService bankSlipsService;
 
-	private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+	DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
 	private static final String URL_BASE = "http://localhost:8080/bankslips/";
 	private static final String CUSTOMER = "Teste cancel bankSlip";
@@ -53,7 +53,7 @@ public class CancelBankSlipTest {
 
 		//Creating a new bankSlip
 		String id = ID_TO_CANCEL;
-		BankSlipJPAEntity bankSlipJPAEntity = bankSlipsService.persist(EntitiesTransformation.convertPOJOEntityToJPAEntity(createBankSlipEntity(ID_TO_CANCEL, new Date(), CUSTOMER, StatusEnum.PENDING.toString(), 111000L)));
+		BankSlipJPAEntity bankSlipJPAEntity = bankSlipsService.persist(EntitiesTransformation.convertPOJOEntityToJPAEntity(createBankSlipEntity(ID_TO_CANCEL, LocalDate.now(), CUSTOMER,111000L, StatusEnum.PENDING.toString())));
 
 		//calling and validating the rest method response
 		mvc.perform(MockMvcRequestBuilders.delete(URL_BASE+id)
@@ -83,13 +83,13 @@ public class CancelBankSlipTest {
 		.andExpect(content().string(startsWith(RESTErrorMessages.CANCEL_BANKSLIP_NOT_FOUND.getMessage())));
 	}
 
-	private BankSlip createBankSlipEntity(String idToCancel, Date dueDate, String customer, String status, long totalInCents) {
+	private BankSlip createBankSlipEntity(String id, LocalDate dueDate, String customer, long totalInCents, String status) {
 		BankSlip BankSlip = new BankSlip();
-		BankSlip.setId(Optional.of(idToCancel));
-		BankSlip.setDueDate(dateFormat.format(dueDate));
+		BankSlip.setId(Optional.of(id));
+		BankSlip.setDueDate(dateFormatter.format(dueDate));
 		BankSlip.setCustomer(customer);
-		BankSlip.setStatus(status);
 		BankSlip.setTotalInCents(totalInCents);
+		BankSlip.setStatus(status);
 		return BankSlip;
-	}	
+	}
 }

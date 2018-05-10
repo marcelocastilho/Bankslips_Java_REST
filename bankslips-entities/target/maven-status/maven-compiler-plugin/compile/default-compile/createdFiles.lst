@@ -1,0 +1,4 @@
+com\bankslips\entities\datatransformation\exception\BankSlipsGenericException.class
+com\bankslips\entities\datatransformation\EntitiesTransformation.class
+com\bankslips\entities\StatusEnum.class
+com\bankslips\entities\BankSlip.class
