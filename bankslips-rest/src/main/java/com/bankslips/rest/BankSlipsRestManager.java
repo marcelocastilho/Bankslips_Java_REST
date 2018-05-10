@@ -2,10 +2,10 @@ package com.bankslips.rest;
 
 import static org.junit.Assert.assertNotNull;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import javax.validation.Valid;
 
 import org.assertj.core.util.Arrays;
 import org.slf4j.Logger;
@@ -44,13 +44,15 @@ public class BankSlipsRestManager {
 
 	private static final Logger log = LoggerFactory.getLogger(BankSlipsRestManager.class);
 	
+	private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+	
 	private HttpMessageConverter<Object> httpMessageConverter;
 
 	@Autowired
 	private BankSlipsService bankSlipsService;
 	
 	@PostMapping
-	public ResponseEntity<Object> createBankSlip(@Valid @RequestBody String request) {
+	public ResponseEntity<Object> createBankSlip(@RequestBody String request) {
 		log.info("Creating new bankSlip.");
 		ResponseEntity<Object> out = null;
 
@@ -125,22 +127,20 @@ public class BankSlipsRestManager {
 		
 		return out;
 	}
-	
-	
+		
 	@SuppressWarnings("unchecked")
 	public void setConverters(HttpMessageConverter<?>[] converters) {
 		this.httpMessageConverter = (HttpMessageConverter<Object>) Arrays.asList(converters).stream()
 				.filter(hmc -> hmc instanceof MappingJackson2HttpMessageConverter).findAny().orElse(null);
 		assertNotNull("the JSON message converter must not be null", this.httpMessageConverter);
 	}
-
 	
 	/**
 	 * 
 	 * @return Resources<EmpresaResource>
 	 */
 	/*@GetMapping
-	public Resources<EmpresaResource> readEmpresas() {
+	public Resources<BankSLip> readEmpresas() {
 		log.info("Finding paied bankslips ");
 		List<BankSlip> paiedBankSLip = this.bankSlipsService.getAll().stream().map(BankSlip::new)
 				.collect(Collectors.toList());
@@ -165,12 +165,22 @@ public class BankSlipsRestManager {
 			throw new BankSlipsValidationException(RESTErrorMessages.CREATE_BANKSLIP_INVALID_REQUEST.getMessage(), HttpStatus.BAD_REQUEST);
 		}
 		
-		//validating the fields 
+		//validating the fields with null or blank
 		if(StringUtils.isEmpty(bankSlip.getCustomer()) 
-				|| bankSlip.getDueDate() == null
-				|| bankSlip.getTotalInCents() == 0){
+				|| bankSlip.getDueDate() == null 
+				|| bankSlip.getTotalInCents() == 0 
+				|| bankSlip.getStatus() == null ){
 			throw new BankSlipsValidationException(RESTErrorMessages.CREATE_BANKSLIP_INVALID_BANKSLIP_DATA.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
 		}
+		//validating the fields with specific values
+		try {
+			dateFormat.parse(bankSlip.getDueDate());
+		} catch (ParseException e) {
+			throw new BankSlipsValidationException(RESTErrorMessages.CREATE_BANKSLIP_INVALID_BANKSLIP_DATA.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
+		}
+		if( !bankSlip.getStatus().equals(StatusEnum.PENDING.toString())) {
+			throw new BankSlipsValidationException(RESTErrorMessages.CREATE_BANKSLIP_INVALID_BANKSLIP_DATA.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
+		}		
 		return bankSlip;
 	}
 }

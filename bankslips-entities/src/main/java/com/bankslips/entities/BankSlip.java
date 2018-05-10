@@ -21,17 +21,17 @@ public class BankSlip {
 	private String customer;
 	@NotNull
 	private String status;
-			
+
 	public BankSlip( String dueDate, long totalInCents, String customer) {
 		this.dueDate = dueDate;
 		this.totalInCents = totalInCents;
 		this.customer = customer;
 		this.status = StatusEnum.PENDING.toString();
 	}
-	
+
 	public BankSlip() {	
 	}
-			
+
 	public Optional<String> getId() {
 		return id;
 	}
@@ -60,7 +60,7 @@ public class BankSlip {
 	public void setCustomer(String customer) {
 		this.customer = customer;
 	}	
-	
+
 	public String getStatus() {
 		return status;
 	}

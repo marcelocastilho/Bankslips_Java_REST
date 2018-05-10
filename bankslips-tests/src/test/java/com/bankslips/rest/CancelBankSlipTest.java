@@ -39,7 +39,7 @@ public class CancelBankSlipTest {
 	@Autowired
 	private BankSlipsService bankSlipsService;
 
-	private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
 	private static final String URL_BASE = "http://localhost:8080/bankslips/";
 	private static final String CUSTOMER = "Teste cancel bankSlip";
