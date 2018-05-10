@@ -11,7 +11,7 @@ public class CancelBankSlipBusinessRulesValidation {
 	
 	public static void validadeBankSlipCancelBusinessRules(BankSlip bankSlip) throws BankSlipBusinessErrorException {
 		if(bankSlip.getStatus().equals(StatusEnum.PAID.toString())) {
-			throw new BankSlipBusinessErrorException(RESTErrorMessages.PAY_BANKSLIP_PAIED_STATUS_ERROR.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
+			throw new BankSlipBusinessErrorException(RESTErrorMessages.PAY_BANKSLIP_PAYED_STATUS_ERROR.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
 		}
 	}
 }

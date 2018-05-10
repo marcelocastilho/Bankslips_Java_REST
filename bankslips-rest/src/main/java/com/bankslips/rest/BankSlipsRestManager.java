@@ -146,8 +146,6 @@ public class BankSlipsRestManager {
 			bankSlipsService.persist(bankSLip);
 
 			out = ResponseEntity.status(HttpStatus.OK).body(RESTSuccessMessages.PAY_BANKSLIP_SUCCESS.getMessage());
-			log.info("BankSLip " + id + " canceled.");
-
 		}catch(BankSlipNotFoundException e) {
 			out = ResponseEntity.status(e.getHttpStatus()).body(e.getMessage());
 			log.error("Error paying a bankSlip, error: " + e.getMessage());
@@ -156,11 +154,11 @@ public class BankSlipsRestManager {
 			log.error("Error paying a bankSlip, error: " + e.getMessage());
 		}
 
-		log.info("BankSLip " + id + " payed.");
+		log.info("BankSLip " + id + " canceled.");
 		return out;
 	}
 
-	@DeleteMapping("/{id}")
+	@DeleteMapping("/{id}/cancel")
 	public ResponseEntity<Object> cancelBankSlip(@PathVariable(value="id") String id) {
 		log.info("Canceling bankSlip with id " + id + ".");
 

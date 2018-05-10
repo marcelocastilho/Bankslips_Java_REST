@@ -6,7 +6,7 @@ public enum RESTErrorMessages {
 			"○ A field of the provided bankslip was null or with invalid values"),
 	CANCEL_BANKSLIP_NOT_FOUND("Bankslip not found with the specified id"),
 	GET_BANKSLIP_INVALID_UUID("Invalid id provided - it must be a valid UUID"),
-	PAY_BANKSLIP_PAIED_STATUS_ERROR("Invalid action, this bankslip is already paied"),
+	PAY_BANKSLIP_PAYED_STATUS_ERROR("Invalid action, this bankslip is already paied"),
 	PAY_BANKSLIP_CANCELED_STATUS_ERROR("Invalid action, this bankslip is canceled");
 		
 	private String message;

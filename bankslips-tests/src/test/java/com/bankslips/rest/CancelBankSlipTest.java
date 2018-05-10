@@ -44,6 +44,7 @@ public class CancelBankSlipTest {
 	private static final String URL_BASE = "http://localhost:8080/bankslips/";
 	private static final String CUSTOMER = "Teste cancel bankSlip";
 	private static final String ID_TO_CANCEL = "aaaa-bbbb-test-cancel-rest";
+	private static final String NOT_FOUND_ID = "NOT_FOUND_ID";
 
 	/**
 	 * This test will validade if the REST method cancel is ok
@@ -56,13 +57,12 @@ public class CancelBankSlipTest {
 		BankSlipJPAEntity bankSlipJPAEntity = bankSlipsService.persist(EntitiesTransformation.convertPOJOEntityToJPAEntity(createBankSlipEntity(ID_TO_CANCEL, LocalDate.now(), CUSTOMER,111000L, StatusEnum.PENDING.toString())));
 
 		//calling and validating the rest method response
-		mvc.perform(MockMvcRequestBuilders.delete(URL_BASE+id)
+		mvc.perform(MockMvcRequestBuilders.delete(URL_BASE+id+"/cancel")
 				.contentType(MediaType.APPLICATION_JSON)
-				.accept(MediaType.APPLICATION_JSON)
-				.content(id))
+				.accept(MediaType.APPLICATION_JSON))
 		.andExpect(status().isOk())
 		.andExpect(content().string(equalTo(RESTSuccessMessages.CANCEL_BANKSLIP_SUCCESS.getMessage())));
-				
+
 		bankSlipsService.delete(bankSlipJPAEntity);
 	}
 
@@ -71,18 +71,30 @@ public class CancelBankSlipTest {
 	 */
 	@Test
 	public void CancelBankSlipErrorNotFound() throws Exception {
-		//Creating a id that does not exists
-		String id = ID_TO_CANCEL;
 
 		//calling and validating the rest method response
-		mvc.perform(MockMvcRequestBuilders.delete(URL_BASE+id)
+		mvc.perform(MockMvcRequestBuilders.delete(URL_BASE+NOT_FOUND_ID+"/cancel")
 				.contentType(MediaType.APPLICATION_JSON)
-				.accept(MediaType.APPLICATION_JSON)
-				.content(id))
+				.accept(MediaType.APPLICATION_JSON))
 		.andExpect(status().isNotFound())
 		.andExpect(content().string(startsWith(RESTErrorMessages.CANCEL_BANKSLIP_NOT_FOUND.getMessage())));
 	}
 
+	@Test
+	public void CancelBankSlipErrorInvalidStatusPayed() throws Exception {
+
+		//Creating a new bankSlip to cancel
+		BankSlipJPAEntity bankSlipJPAEntity = bankSlipsService.persist(EntitiesTransformation.convertPOJOEntityToJPAEntity(createBankSlipEntity(ID_TO_CANCEL, LocalDate.now(), CUSTOMER,111000L, StatusEnum.PENDING.toString())));
+		bankSlipJPAEntity.setStatus(StatusEnum.PAID.toString());
+		bankSlipsService.persist(bankSlipJPAEntity);
+		
+		//calling and validating the rest method response
+		mvc.perform(MockMvcRequestBuilders.delete(URL_BASE+ID_TO_CANCEL+"/cancel")
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON))
+		.andExpect(status().isUnprocessableEntity())
+		.andExpect(content().string(startsWith(RESTErrorMessages.PAY_BANKSLIP_PAYED_STATUS_ERROR.getMessage())));
+	}
 	private BankSlip createBankSlipEntity(String id, LocalDate dueDate, String customer, long totalInCents, String status) {
 		BankSlip BankSlip = new BankSlip();
 		BankSlip.setId(Optional.of(id));
