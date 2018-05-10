@@ -1,11 +1,9 @@
 package com.bankslips.rest;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Optional;
 
@@ -25,7 +23,6 @@ import com.bankslips.entities.datatransformation.EntitiesTransformation;
 import com.bankslips.jpa.entities.BankSlipJPAEntity;
 import com.bankslips.jpa.services.BankSlipsService;
 import com.bankslips.main.SprintBootStarter;
-import com.bankslips.rest.enuns.RESTSuccessMessages;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes=SprintBootStarter.class)
@@ -37,6 +34,8 @@ public class GetBankSlipsTest {
 	
 	@Autowired
 	private BankSlipsService bankSlipsService;
+	
+	private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	private static final String URL_BASE = "http://localhost:8080/bankslips/";
 	private static final String CUSTOMER = "Teste getAll bankSlip";
@@ -46,8 +45,8 @@ public class GetBankSlipsTest {
 	@Test
 	public void GetBankSlips() throws Exception {
 		//Creating two new bankSlips
-		BankSlipJPAEntity bankSlipJPAEntity1 = bankSlipsService.persist(EntitiesTransformation.convertEntityToJPAEntity(createBankSlipEntity(ID_TO_CREATE, new Date(), CUSTOMER, StatusEnum.PENDING.toString(), 111000L)));
-		BankSlipJPAEntity bankSlipJPAEntity2 = bankSlipsService.persist(EntitiesTransformation.convertEntityToJPAEntity(createBankSlipEntity(ID_TO_CREATE_2, new Date(), CUSTOMER, StatusEnum.PENDING.toString(), 111000L)));
+		BankSlipJPAEntity bankSlipJPAEntity1 = bankSlipsService.persist(EntitiesTransformation.convertPOJOEntityToJPAEntity(createBankSlipEntity(ID_TO_CREATE, new Date(), CUSTOMER, StatusEnum.PENDING.toString(), 111000L)));
+		BankSlipJPAEntity bankSlipJPAEntity2 = bankSlipsService.persist(EntitiesTransformation.convertPOJOEntityToJPAEntity(createBankSlipEntity(ID_TO_CREATE_2, new Date(), CUSTOMER, StatusEnum.PENDING.toString(), 111000L)));
 		
 		//calling and validating the rest method response
 		mvc.perform(MockMvcRequestBuilders.get(URL_BASE)
@@ -64,7 +63,7 @@ public class GetBankSlipsTest {
 	private BankSlip createBankSlipEntity(String idToCancel, Date dueDate, String customer, String status, long totalInCents) {
 		BankSlip BankSlip = new BankSlip();
 		BankSlip.setId(Optional.of(idToCancel));
-		BankSlip.setDueDate(dueDate);
+		BankSlip.setDueDate(dateFormat.format(dueDate));
 		BankSlip.setCustomer(customer);
 		BankSlip.setStatus(status);
 		BankSlip.setTotalInCents(totalInCents);

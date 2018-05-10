@@ -5,6 +5,8 @@ import static org.junit.Assert.assertNotNull;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.validation.Valid;
+
 import org.assertj.core.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,30 +49,23 @@ public class BankSlipsRestManager {
 	@Autowired
 	private BankSlipsService bankSlipsService;
 	
-	@SuppressWarnings("unchecked")
-	public void setConverters(HttpMessageConverter<?>[] converters) {
-		this.httpMessageConverter = (HttpMessageConverter<Object>) Arrays.asList(converters).stream()
-				.filter(hmc -> hmc instanceof MappingJackson2HttpMessageConverter).findAny().orElse(null);
-		assertNotNull("the JSON message converter must not be null", this.httpMessageConverter);
-	}
-
 	@PostMapping
-	public ResponseEntity<Object> createBankSlip(@RequestBody String request) {
+	public ResponseEntity<Object> createBankSlip(@Valid @RequestBody String request) {
 		log.info("Creating new bankSlip.");
 		ResponseEntity<Object> out = null;
 
 		try {
-
+			//TODO Make better the request validation
 			BankSlip bankSlip = validateCreateBankSlipRequest(request);
 
 			bankSlip.setStatus(StatusEnum.PENDING.toString());
-			BankSlipJPAEntity bankSlipSaved = bankSlipsService.persist(EntitiesTransformation.convertEntityToJPAEntity(bankSlip));
+			BankSlipJPAEntity bankSlipJPA = bankSlipsService.persist(EntitiesTransformation.convertPOJOEntityToJPAEntity(bankSlip));
 
 			out = ResponseEntity.status(HttpStatus.OK).body(RESTSuccessMessages.CREATE_BANKSLIP_SUCCESS.getMessage());
 			
-			log.info("New bankSlip with id: " + bankSlipSaved.getId());
+			log.info("New bankSlip with id: " + bankSlipJPA.getId());
 			
-		} catch (BankSlipsValidationException e) {
+		} catch (BankSlipsValidationException  e) {
 			out = ResponseEntity.status(e.getHttpStatus()).body(e.getMessage());
 			log.error("Error creating a new bankSlip, error: " + e.getMessage());
 		}
@@ -131,6 +126,15 @@ public class BankSlipsRestManager {
 		return out;
 	}
 	
+	
+	@SuppressWarnings("unchecked")
+	public void setConverters(HttpMessageConverter<?>[] converters) {
+		this.httpMessageConverter = (HttpMessageConverter<Object>) Arrays.asList(converters).stream()
+				.filter(hmc -> hmc instanceof MappingJackson2HttpMessageConverter).findAny().orElse(null);
+		assertNotNull("the JSON message converter must not be null", this.httpMessageConverter);
+	}
+
+	
 	/**
 	 * 
 	 * @return Resources<EmpresaResource>
@@ -151,14 +155,17 @@ public class BankSlipsRestManager {
 	 */
 	private BankSlip validateCreateBankSlipRequest(String request) throws BankSlipsValidationException {
 
-		BankSlip bankSlip;
+		BankSlip bankSlip = null;
+		
 		try {
+			// Try to parse the request object to java bankSlip object
 			bankSlip = new ObjectMapper().readValue(request, BankSlip.class);
 		} catch (Exception e) {
-			//I considered that any error in this parser must response the same message 
+			// Any error in this parser must response the same message Invalid Request
 			throw new BankSlipsValidationException(RESTErrorMessages.CREATE_BANKSLIP_INVALID_REQUEST.getMessage(), HttpStatus.BAD_REQUEST);
 		}
-
+		
+		//validating the fields 
 		if(StringUtils.isEmpty(bankSlip.getCustomer()) 
 				|| bankSlip.getDueDate() == null
 				|| bankSlip.getTotalInCents() == 0){

@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Optional;
@@ -43,6 +44,8 @@ public class CreateBankSlipTests{
 
 	private HttpMessageConverter<Object> httpMessageConverter;
 
+	private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	
 	private static final String URL_BASE = "http://localhost:8080/bankslips";
 	private static final String CUSTOMER = "Teste create bankSlip";
 
@@ -117,7 +120,7 @@ public class CreateBankSlipTests{
 	private BankSlip createBankSlipEntity(Optional<String> id, Date dueDate, String customer, long totalInCents) {
 		BankSlip BankSlip = new BankSlip();
 		BankSlip.setId(id);
-		BankSlip.setDueDate(dueDate);
+		BankSlip.setDueDate(dateFormat.format(dueDate));
 		BankSlip.setCustomer(customer);
 		BankSlip.setTotalInCents(totalInCents);
 		return BankSlip;

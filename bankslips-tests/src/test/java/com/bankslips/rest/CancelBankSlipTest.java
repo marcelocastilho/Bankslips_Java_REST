@@ -3,6 +3,7 @@ package com.bankslips.rest;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Optional;
 
@@ -38,6 +39,7 @@ public class CancelBankSlipTest {
 	@Autowired
 	private BankSlipsService bankSlipsService;
 
+	private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	private static final String URL_BASE = "http://localhost:8080/bankslips/";
 	private static final String CUSTOMER = "Teste cancel bankSlip";
@@ -51,7 +53,7 @@ public class CancelBankSlipTest {
 
 		//Creating a new bankSlip
 		String id = ID_TO_CANCEL;
-		BankSlipJPAEntity bankSlipJPAEntity = bankSlipsService.persist(EntitiesTransformation.convertEntityToJPAEntity(createBankSlipEntity(ID_TO_CANCEL, new Date(), CUSTOMER, StatusEnum.PENDING.toString(), 111000L)));
+		BankSlipJPAEntity bankSlipJPAEntity = bankSlipsService.persist(EntitiesTransformation.convertPOJOEntityToJPAEntity(createBankSlipEntity(ID_TO_CANCEL, new Date(), CUSTOMER, StatusEnum.PENDING.toString(), 111000L)));
 
 		//calling and validating the rest method response
 		mvc.perform(MockMvcRequestBuilders.delete(URL_BASE+id)
@@ -84,7 +86,7 @@ public class CancelBankSlipTest {
 	private BankSlip createBankSlipEntity(String idToCancel, Date dueDate, String customer, String status, long totalInCents) {
 		BankSlip BankSlip = new BankSlip();
 		BankSlip.setId(Optional.of(idToCancel));
-		BankSlip.setDueDate(dueDate);
+		BankSlip.setDueDate(dateFormat.format(dueDate));
 		BankSlip.setCustomer(customer);
 		BankSlip.setStatus(status);
 		BankSlip.setTotalInCents(totalInCents);

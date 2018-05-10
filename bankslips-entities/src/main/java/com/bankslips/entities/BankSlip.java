@@ -1,7 +1,8 @@
 package com.bankslips.entities;
 
-import java.util.Date;
 import java.util.Optional;
+
+import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -12,12 +13,16 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 public class BankSlip {
 
 	private Optional<String> id = Optional.empty();
-	private Date dueDate;
+	@NotNull
+	private String dueDate;
+	@NotNull
 	private long totalInCents;
+	@NotNull
 	private String customer;
+	@NotNull
 	private String status;
 			
-	public BankSlip( Date dueDate, long totalInCents, String customer) {
+	public BankSlip( String dueDate, long totalInCents, String customer) {
 		this.dueDate = dueDate;
 		this.totalInCents = totalInCents;
 		this.customer = customer;
@@ -35,10 +40,10 @@ public class BankSlip {
 		this.id = id;
 	}
 
-	public Date getDueDate() {
+	public String getDueDate() {
 		return dueDate;
 	}
-	public void setDueDate(Date dueDate) {
+	public void setDueDate(String dueDate) {
 		this.dueDate = dueDate;
 	}
 
