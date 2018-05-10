@@ -15,12 +15,6 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @EnableSwagger2
 public class SwaggerConfig {
 
-	//@Autowired
-	//private JwtTokenUtil jwtTokenUtil;
-
-	//@Autowired
-	//private UserDetailsService userDetailsService;
-
 	@Bean
 	public Docket api() {
 		return new Docket(DocumentationType.SWAGGER_2).select()
@@ -33,19 +27,5 @@ public class SwaggerConfig {
 		return new ApiInfoBuilder().title("BankSlips Controler")
 				.description("This rest application provides functions to create, find, findAll, pay and cancel bankSlips.").version("1.0")
 				.build();
-	} 
-
-	/*@Bean
-	public SecurityConfiguration security() {
-		String token;
-		try {
-			UserDetails userDetails = this.userDetailsService.loadUserByUsername("ceo@paavocorp.com");
-			token = this.jwtTokenUtil.getToken(userDetails);
-		} catch (Exception e) {
-			token = "";
-		}
-
-		return new SecurityConfiguration(null, null, null, null, "Bearer " + token, ApiKeyVehicle.HEADER,
-				"Authorization", ",");
-	}*/
+	}
 }

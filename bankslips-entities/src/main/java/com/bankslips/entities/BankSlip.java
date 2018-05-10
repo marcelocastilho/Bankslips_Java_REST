@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -82,6 +83,7 @@ public class BankSlip {
 		this.fine = fine;
 	}
 	
+	@JsonIgnore
 	public Optional<LocalDate> getDueDateDateFormat() {
 	
 		Optional<LocalDate> localDate = null;

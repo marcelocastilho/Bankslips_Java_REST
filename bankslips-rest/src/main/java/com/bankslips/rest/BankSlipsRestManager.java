@@ -83,9 +83,9 @@ public class BankSlipsRestManager {
 	}
 
 	@GetMapping
-	public ResponseEntity<Object> getBankSlips() {		
+	public ResponseEntity<List<BankSlip>> getBankSlips() {		
 		log.info("Finding all bankSlips.");
-		ResponseEntity<Object> out = null;
+		ResponseEntity<List<BankSlip>> out = null;
 
 		List<BankSlipJPAEntity> allBankSlipJPAEntity = this.bankSlipsService.getAll();
 

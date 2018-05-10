@@ -1,4 +1,4 @@
-com\bankslips\jpa\entities\BankSlipJPAEntity.class
 com\bankslips\jpa\repository\BankSlipRepository.class
 com\bankslips\jpa\services\BankSlipsService.class
+com\bankslips\jpa\entities\BankSlipJPAEntity.class
 com\bankslips\jpa\services\BankSlipsServiceImpl.class
