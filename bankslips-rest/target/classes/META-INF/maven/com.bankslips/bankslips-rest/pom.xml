@@ -45,5 +45,11 @@
 			<artifactId>springfox-swagger-ui</artifactId>
 			<version>2.6.1</version>
 		</dependency>
+		
+		<!-- Show the application Health in the address http://localhost:8080/new/actuator/health -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency> 
 	</dependencies>
 </project>

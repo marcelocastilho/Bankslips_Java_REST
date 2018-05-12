@@ -45,17 +45,8 @@ public class BankSlipsRestManager {
 
 	private static final Logger log = LoggerFactory.getLogger(BankSlipsRestManager.class);
 
-	private HttpMessageConverter<Object> httpMessageConverter;
-
 	@Autowired
 	private BankSlipsService bankSlipsService;
-
-	@SuppressWarnings("unchecked")
-	public void setConverters(HttpMessageConverter<?>[] converters) {
-		this.httpMessageConverter = (HttpMessageConverter<Object>) Arrays.asList(converters).stream()
-				.filter(hmc -> hmc instanceof MappingJackson2HttpMessageConverter).findAny().orElse(null);
-		assertNotNull("the JSON message converter must not be null", this.httpMessageConverter);
-	}
 
 	@PostMapping
 	public ResponseEntity<Object> createBankSlip(@RequestBody String request) {
