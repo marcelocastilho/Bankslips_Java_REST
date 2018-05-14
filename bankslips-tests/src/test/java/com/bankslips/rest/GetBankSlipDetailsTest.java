@@ -65,14 +65,14 @@ public class GetBankSlipDetailsTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON))
 		.andExpect(status().isOk())
-		.andExpect(jsonPath("fine").value(INTEREST_RATE_FIVE_DAYS_CORRECT));
+		.andExpect(jsonPath("$.bankSlip.fine").value(INTEREST_RATE_FIVE_DAYS_CORRECT));
 
 		//calling and validating the rest method response
 		mvc.perform(MockMvcRequestBuilders.get(URL_BASE+BANKSLIP_ID_2)
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON))
 		.andExpect(status().isOk())
-		.andExpect(jsonPath("fine").value(INTEREST_RATE_ELEVEN_DAYS_CORRECT));
+		.andExpect(jsonPath("$.bankSlip.fine").value(INTEREST_RATE_ELEVEN_DAYS_CORRECT));
 
 		bankSlipsService.delete(bankSlipJPAEntity1);
 		bankSlipsService.delete(bankSlipJPAEntity2);

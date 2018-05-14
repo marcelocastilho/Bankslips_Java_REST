@@ -1,16 +1,25 @@
 package com.bankslips.entities;
 
+import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 import javax.validation.constraints.NotNull;
 
+import org.springframework.http.HttpStatus;
+
+import com.bankslips.entities.datatransformation.exception.BankSlipsGenericException;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
+/**
+ * This class is the bankSlip model used as a DTO object
+ * @author Marcelo Castilho
+ *
+ */
 @JsonInclude(Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class BankSlip {
@@ -45,7 +54,7 @@ public class BankSlip {
 	public void setId(Optional<String> id) {
 		this.id = id;
 	}
-
+	
 	public String getDueDate() {
 		return dueDate;
 	}
@@ -83,12 +92,20 @@ public class BankSlip {
 		this.fine = fine;
 	}
 	
+	/**
+	 * This method return the dueDate formatted, using the mask yyyy-MM-dd.
+	 * @return String
+	 */
 	@JsonIgnore
 	public Optional<LocalDate> getDueDateDateFormat() {
 	
 		Optional<LocalDate> localDate = null;
 		if(dueDate != null) {
-			localDate = Optional.of(LocalDate.parse(dueDate,dateFormatter));
+			try{
+				localDate = Optional.of(LocalDate.parse(dueDate,dateFormatter));
+			}catch(DateTimeException e){
+				throw new BankSlipsGenericException("Invalid dueDate " + e.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
+			}
 		}
 		return localDate;
 	}

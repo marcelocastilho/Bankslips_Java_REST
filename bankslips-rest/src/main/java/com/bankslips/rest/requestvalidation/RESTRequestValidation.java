@@ -1,7 +1,8 @@
 package com.bankslips.rest.requestvalidation;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.DateTimeException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,7 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class RESTRequestValidation {
 	
-	private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+	DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 	
 	/**
 	 * This method verify the request content of rest operation createBankSlip
@@ -45,13 +46,13 @@ public class RESTRequestValidation {
 		}
 		//validating the fields with specific values
 		try {
-			dateFormat.parse(bankSlip.getDueDate());
-		} catch (ParseException e) {
+			LocalDate.parse(bankSlip.getDueDate(),dateFormatter);
+		} catch (DateTimeException e) {
 			throw new BankSlipsValidationException(RESTErrorMessages.CREATE_BANKSLIP_INVALID_BANKSLIP_DATA.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
 		}
 		if( !bankSlip.getStatus().equals(StatusEnum.PENDING.toString())) {
 			throw new BankSlipsValidationException(RESTErrorMessages.CREATE_BANKSLIP_INVALID_BANKSLIP_DATA.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
-		}		
+		}
 		return bankSlip;
 	}
 

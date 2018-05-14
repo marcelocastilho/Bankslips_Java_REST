@@ -1,18 +1,14 @@
 package com.bankslips.rest;
 
-import static org.junit.Assert.assertNotNull;
-
+import java.net.URI;
 import java.util.List;
 import java.util.Vector;
 
-import org.assertj.core.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,6 +18,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import com.bankslips.entities.BankSlip;
 import com.bankslips.entities.StatusEnum;
@@ -37,13 +34,14 @@ import com.bankslips.rest.exceptions.BankSlipBusinessErrorException;
 import com.bankslips.rest.exceptions.BankSlipNotFoundException;
 import com.bankslips.rest.exceptions.BankSlipsValidationException;
 import com.bankslips.rest.requestvalidation.RESTRequestValidation;
+import com.bankslips.rest.resources.BankSlipResource;
 
 @RestController
 @RequestMapping("/bankslips")
 @CrossOrigin(origins = "*")
-public class BankSlipsRestManager {
+public class BankSlipsRestControler {
 
-	private static final Logger log = LoggerFactory.getLogger(BankSlipsRestManager.class);
+	private static final Logger log = LoggerFactory.getLogger(BankSlipsRestControler.class);
 
 	@Autowired
 	private BankSlipsService bankSlipsService;
@@ -61,8 +59,14 @@ public class BankSlipsRestManager {
 			bankSlip.setStatus(StatusEnum.PENDING.toString());
 			BankSlipJPAEntity bankSlipJPA = bankSlipsService.persist(EntitiesTransformation.convertPOJOEntityToJPAEntity(bankSlip));
 
+			//hateoas send link to request the created bakslip
+			final URI uri = MvcUriComponentsBuilder.fromController(getClass())
+					.path("/{id}")
+					.buildAndExpand(bankSlipJPA.getId())
+					.toUri();
+			
 			out = ResponseEntity.status(HttpStatus.OK).body(RESTSuccessMessages.CREATE_BANKSLIP_SUCCESS.getMessage());
-
+	
 			log.info("New bankSlip with id: " + bankSlipJPA.getId());
 
 		} catch (BankSlipsValidationException  e) {
@@ -74,16 +78,16 @@ public class BankSlipsRestManager {
 	}
 
 	@GetMapping
-	public ResponseEntity<List<BankSlip>> getBankSlips() {		
+	public ResponseEntity<List<BankSlipResource>> getBankSlips() {		
 		log.info("Finding all bankSlips.");
-		ResponseEntity<List<BankSlip>> out = null;
+		ResponseEntity<List<BankSlipResource>> out = null;
 
 		List<BankSlipJPAEntity> allBankSlipJPAEntity = this.bankSlipsService.getAll();
 
 		//TODO change this transformation using reflection or another lib
-		List<BankSlip> allBankSLips = new Vector<BankSlip>();
+		List<BankSlipResource> allBankSLips = new Vector<BankSlipResource>();
 		for (BankSlipJPAEntity JPABankSLip : allBankSlipJPAEntity) {
-			allBankSLips.add(EntitiesTransformation.convertJPAEntityToPOJOEntity(JPABankSLip));
+			allBankSLips.add(new BankSlipResource(EntitiesTransformation.convertJPAEntityToPOJOEntity(JPABankSLip)));
 		}
 
 		out = ResponseEntity.status(HttpStatus.OK).body(allBankSLips);
@@ -92,10 +96,10 @@ public class BankSlipsRestManager {
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<Object> getBankSlipDetails(@PathVariable(value="id") String id) {
+	public ResponseEntity<?> getBankSlipDetails(@PathVariable(value="id") String id) {
 		log.info("Finding bankSlip by id : " + id + ".");
 
-		ResponseEntity<Object> out = null;
+		ResponseEntity<?> out = null;
 
 		try {
 			//TODO change the request validation
@@ -108,7 +112,7 @@ public class BankSlipsRestManager {
 			//perform the fine calculation if overdue date
 			Long fine = FineCalc.calculateFine(bankSlip.getTotalInCents(), bankSlip.getDueDateDateFormat().get() );
 			bankSlip.setFine(fine);
-			out = ResponseEntity.status(HttpStatus.OK).body(bankSlip);
+			out = ResponseEntity.status(HttpStatus.OK).body(new BankSlipResource(bankSlip));
 
 		}catch(BankSlipNotFoundException e) {
 			out = ResponseEntity.status(e.getHttpStatus()).body(e.getMessage());
@@ -121,7 +125,7 @@ public class BankSlipsRestManager {
 		log.info("Found bankSlip with id: " + id + ".");
 		return out;
 	}
-		
+
 	@PutMapping("/{id}/pay")
 	public ResponseEntity<Object> payBankSlip(@PathVariable(value="id") String id) {
 		log.info("Paying bankSlip with id " + id + ".");
@@ -129,10 +133,10 @@ public class BankSlipsRestManager {
 
 		try{
 			BankSlipJPAEntity bankSLip = this.bankSlipsService.findById(id).orElseThrow(() -> new BankSlipNotFoundException(RESTErrorMessages.CANCEL_BANKSLIP_NOT_FOUND.getMessage() + " " + id, HttpStatus.NOT_FOUND ));
-			
+
 			//validating if the bankslip is in a status that could be paied
 			PayBankSlipBusinessRulesValidation.validadeBankSlipPayBusinessRules(EntitiesTransformation.convertJPAEntityToPOJOEntity(bankSLip));
-			
+
 			bankSLip.setStatus(StatusEnum.PAID.toString());
 			bankSlipsService.persist(bankSLip);
 
