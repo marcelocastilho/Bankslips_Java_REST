@@ -16,7 +16,7 @@ public interface BankSlipsService {
 	 * 
 	 * @return List<BankSlip>
 	 */
-	List<BankSlipJPAEntity> getAll();
+	public List<BankSlipJPAEntity> getAll();
 
 	/**
 	 * 
@@ -25,7 +25,7 @@ public interface BankSlipsService {
 	 * @param id
 	 * @return Optional<BankSlip>
 	 */
-	Optional<BankSlipJPAEntity> findById(String id);
+	public Optional<BankSlipJPAEntity> findById(String id);
 
 	/**
 	 * 
@@ -34,7 +34,7 @@ public interface BankSlipsService {
 	 * @param bankSlip
 	 * @return BankSlip
 	 */
-	BankSlipJPAEntity persist(BankSlipJPAEntity bankSlip);
+	public BankSlipJPAEntity persist(BankSlipJPAEntity bankSlip);
 	
 	/**
 	 * 
@@ -43,6 +43,6 @@ public interface BankSlipsService {
 	 * @param bankSlip
 	 * @return BankSlip
 	 */
-	 void delete(BankSlipJPAEntity bankSlip);
+	public void delete(BankSlipJPAEntity bankSlip);
 	
 }

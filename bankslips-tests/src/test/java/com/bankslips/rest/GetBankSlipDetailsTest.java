@@ -3,39 +3,47 @@ package com.bankslips.rest;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.BDDMockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 import com.bankslips.entities.BankSlip;
 import com.bankslips.entities.StatusEnum;
 import com.bankslips.entities.datatransformation.EntitiesTransformation;
 import com.bankslips.jpa.entities.BankSlipJPAEntity;
-import com.bankslips.jpa.services.BankSlipsService;
+import com.bankslips.jpa.repository.BankSlipRepository;
 import com.bankslips.main.SprintBootStarter;
 import com.bankslips.rest.enuns.RESTErrorMessages;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes=SprintBootStarter.class)
-@AutoConfigureMockMvc
+@WebAppConfiguration
 public class GetBankSlipDetailsTest {
-
-	@Autowired
+	
 	private MockMvc mvc;
-
+	
 	@Autowired
-	private BankSlipsService bankSlipsService;
+	private WebApplicationContext webApplicationContext;
+
+	@MockBean
+	private BankSlipRepository bankSlipRepository;
 
 	DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -52,14 +60,22 @@ public class GetBankSlipDetailsTest {
 	private static final long INTEREST_RATE_FIVE_DAYS_CORRECT  = (long) (100000*0.025);//5*0.005
 	private static final long INTEREST_RATE_ELEVEN_DAYS_CORRECT = (long) (100000*0.060);//10*0.005+1*0.01
 	
+	@Before
+	public void setUp() {
+		this.mvc = webAppContextSetup(webApplicationContext).build();
+	}
+	
 	@Test
+	@WithMockUser(username="admin")
 	public void GetBankSlipDetailsWithFineCalcSuccess() throws Exception {
-
-		//Creating a new bankSlips overdue 5 days
-		BankSlipJPAEntity bankSlipJPAEntity1 = bankSlipsService.persist(EntitiesTransformation.convertPOJOEntityToJPAEntity(createBankSlipEntity(BANKSLIP_ID, LocalDate.now().minusDays(5), CUSTOMER, BANKSLIP_INITIAL_VALUE, StatusEnum.PENDING.toString())));
-		//Creating a new bankSlips overdue 11 days
-		BankSlipJPAEntity bankSlipJPAEntity2 = bankSlipsService.persist(EntitiesTransformation.convertPOJOEntityToJPAEntity(createBankSlipEntity(BANKSLIP_ID_2, LocalDate.now().minusDays(11), CUSTOMER, BANKSLIP_INITIAL_VALUE, StatusEnum.PENDING.toString())));
-
+		
+		//Creating database bankSlips overdue 5 days
+		Optional<BankSlipJPAEntity> entitie = Optional.of(EntitiesTransformation.convertPOJOEntityToJPAEntity(createBankSlipEntity(BANKSLIP_ID, LocalDate.now().minusDays(5), CUSTOMER, BANKSLIP_INITIAL_VALUE, StatusEnum.PENDING.toString())));
+		
+		BDDMockito.given(this.bankSlipRepository.findById(BANKSLIP_ID)).willReturn(entitie);
+		//Creating database bankSlips overdue 11 days
+		BDDMockito.given(this.bankSlipRepository.findById(BANKSLIP_ID_2)).willReturn(Optional.of(EntitiesTransformation.convertPOJOEntityToJPAEntity(createBankSlipEntity(BANKSLIP_ID_2, LocalDate.now().minusDays(11), CUSTOMER, BANKSLIP_INITIAL_VALUE, StatusEnum.PENDING.toString()))));
+		
 		//calling and validating the rest method response
 		mvc.perform(MockMvcRequestBuilders.get(URL_BASE+BANKSLIP_ID)
 				.contentType(MediaType.APPLICATION_JSON)
@@ -74,8 +90,6 @@ public class GetBankSlipDetailsTest {
 		.andExpect(status().isOk())
 		.andExpect(jsonPath("$.bankSlip.fine").value(INTEREST_RATE_ELEVEN_DAYS_CORRECT));
 
-		bankSlipsService.delete(bankSlipJPAEntity1);
-		bankSlipsService.delete(bankSlipJPAEntity2);
 	}
 
 	@Test

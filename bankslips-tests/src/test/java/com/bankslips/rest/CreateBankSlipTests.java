@@ -14,33 +14,42 @@ import org.assertj.core.util.Arrays;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.BDDMockito;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.mock.http.MockHttpOutputMessage;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import com.bankslips.entities.BankSlip;
 import com.bankslips.entities.StatusEnum;
+import com.bankslips.entities.datatransformation.EntitiesTransformation;
+import com.bankslips.jpa.entities.BankSlipJPAEntity;
+import com.bankslips.jpa.repository.BankSlipRepository;
 import com.bankslips.main.SprintBootStarter;
 import com.bankslips.rest.enuns.RESTErrorMessages;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes=SprintBootStarter.class)
-@AutoConfigureMockMvc
+@WebAppConfiguration
 public class CreateBankSlipTests{
 
-	@Autowired
 	private MockMvc mvc;
 
 	@Autowired
 	private WebApplicationContext webApplicationContext;
+	
+	@MockBean
+	private BankSlipRepository bankSlipRepository;
 
 	private HttpMessageConverter<Object> httpMessageConverter;
 
@@ -48,7 +57,6 @@ public class CreateBankSlipTests{
 	
 	private static final String URL_BASE = "http://localhost:8080/bankslips";
 	private static final String CUSTOMER = "Teste create bankSlip";
-
 
 	@Before
 	public void setUp() {
@@ -66,9 +74,14 @@ public class CreateBankSlipTests{
 	/**
 	 * This test will verify if the REST method CreateBankSlip is ok
 	 */
-	@Test	
+	@Test
+	@WithMockUser(username="admin")
 	public void CreateBankSlipSuccess() throws Exception {
-
+		
+		BankSlipJPAEntity bankSlipJPAEntity = EntitiesTransformation.convertPOJOEntityToJPAEntity(createBankSlipEntity(Optional.of("Teste"), LocalDate.now(), CUSTOMER, 111000L, StatusEnum.PENDING.toString()));
+		
+		BDDMockito.given(this.bankSlipRepository.save(Mockito.any(BankSlipJPAEntity.class))).willReturn(bankSlipJPAEntity); 
+			
 		//Creating a correct bankSlip object
 		String bankSlipJson = convertInJason(createBankSlipEntity(null, LocalDate.now(), CUSTOMER, 111000L, StatusEnum.PENDING.toString()));
 
@@ -84,8 +97,9 @@ public class CreateBankSlipTests{
 	/**
 	 * This test will verify if the request contains a valid BankSlip
 	 */
-	@Test	
-	public void CreateBankSlipErrorRquest() throws Exception {
+	@Test
+	@WithMockUser(username="admin")
+	public void CreateBankSlipErrorRequest() throws Exception {
 
 		//Creating a problematic bankSlip object
 		String bankSlip = "Problematic bankSlip";
@@ -102,8 +116,9 @@ public class CreateBankSlipTests{
 	/**
 	 * This test will verify if the request contains a valid date in the object BankSlip
 	 */
-	@Test	
-	public void GetBankSlipDetails() throws Exception {
+	@Test
+	@WithMockUser(username="admin")
+	public void CreateBankSlipErrorInvalidDate() throws Exception {
 		
 		//Creating a correct bankSlip object
 		String bankSlipJson = convertInJason(createBankSlipEntity(null, null, CUSTOMER, 111000L, null));
@@ -127,7 +142,7 @@ public class CreateBankSlipTests{
 		BankSlip.setStatus(status);
 		return BankSlip;
 	}
-
+	
 	protected String convertInJason(Object o) throws IOException {
 		MockHttpOutputMessage mockHttpOutputMessage = new MockHttpOutputMessage();
 		this.httpMessageConverter.write(o, MediaType.APPLICATION_JSON, mockHttpOutputMessage);

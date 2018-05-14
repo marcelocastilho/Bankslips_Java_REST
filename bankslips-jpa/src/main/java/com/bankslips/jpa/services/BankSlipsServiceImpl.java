@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import com.bankslips.jpa.entities.BankSlipJPAEntity;
 import com.bankslips.jpa.repository.BankSlipRepository;
@@ -35,10 +34,7 @@ public class BankSlipsServiceImpl implements BankSlipsService {
 	@Override
 	public BankSlipJPAEntity persist(BankSlipJPAEntity bankSlip) {
 		log.info("Saving BankSlip: {}", bankSlip);
-		if(StringUtils.isEmpty(bankSlip.getId())){
-			// I had a problem to insert the uuid in entity, so i put here. Not so good! 
-			bankSlip.setId(java.util.UUID.randomUUID().toString());			
-		}				
+				
 		return this.bankSlipRepository.save(bankSlip);
 	}
 

@@ -1,27 +1,35 @@
 package com.bankslips.rest;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.startsWith;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
-import static org.hamcrest.Matchers.*;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.BDDMockito;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 import com.bankslips.entities.BankSlip;
 import com.bankslips.entities.StatusEnum;
 import com.bankslips.entities.datatransformation.EntitiesTransformation;
 import com.bankslips.jpa.entities.BankSlipJPAEntity;
-import com.bankslips.jpa.services.BankSlipsService;
+import com.bankslips.jpa.repository.BankSlipRepository;
 import com.bankslips.main.SprintBootStarter;
 import com.bankslips.rest.enuns.RESTErrorMessages;
 import com.bankslips.rest.enuns.RESTSuccessMessages;
@@ -31,11 +39,18 @@ import com.bankslips.rest.enuns.RESTSuccessMessages;
 @AutoConfigureMockMvc
 public class PayBankSlipTest {
 
-	@Autowired
 	private MockMvc mvc;
 
 	@Autowired
-	private BankSlipsService bankSlipsService;
+	private WebApplicationContext webApplicationContext;
+
+	@MockBean
+	private BankSlipRepository bankSlipRepository;
+
+	@Before
+	public void setUp() {
+		this.mvc = webAppContextSetup(webApplicationContext).build();
+	}
 
 	DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -50,8 +65,9 @@ public class PayBankSlipTest {
 	@Test	
 	public void PayBankSlipSuccess() throws Exception {
 
-		//Creating a new bankSlip
-		BankSlipJPAEntity bankSlipJPAEntity = bankSlipsService.persist(EntitiesTransformation.convertPOJOEntityToJPAEntity(createBankSlipEntity(ID_TO_PAY, LocalDate.now(), CUSTOMER,111000L, StatusEnum.PENDING.toString())));
+		//Creating a new bankSlip	
+		Optional<BankSlipJPAEntity> bankSlipJPAEntity = Optional.of(EntitiesTransformation.convertPOJOEntityToJPAEntity(createBankSlipEntity(Optional.of(ID_TO_PAY), LocalDate.now(), CUSTOMER, 111000L, StatusEnum.PENDING.toString())));
+		BDDMockito.given(this.bankSlipRepository.findById(Mockito.anyString())).willReturn(bankSlipJPAEntity); 
 
 		//calling and validating the rest method response
 		mvc.perform(MockMvcRequestBuilders.put(URL_BASE+ID_TO_PAY+"/pay")
@@ -60,7 +76,6 @@ public class PayBankSlipTest {
 		.andExpect(status().isOk())
 		.andExpect(content().string(equalTo(RESTSuccessMessages.PAY_BANKSLIP_SUCCESS.getMessage())));
 
-		bankSlipsService.delete(bankSlipJPAEntity);
 	}
 
 	/**
@@ -80,11 +95,11 @@ public class PayBankSlipTest {
 	@Test
 	public void PayBankSlipErrorInvalidStatusPayed() throws Exception {
 
-		//Creating a new bankSlip to cancel
-		BankSlipJPAEntity bankSlipJPAEntity = bankSlipsService.persist(EntitiesTransformation.convertPOJOEntityToJPAEntity(createBankSlipEntity(ID_TO_PAY, LocalDate.now(), CUSTOMER,111000L, StatusEnum.PENDING.toString())));
-		bankSlipJPAEntity.setStatus(StatusEnum.PAID.toString());
-		bankSlipsService.persist(bankSlipJPAEntity);
-		
+		//Creating a new bankSlip	
+		Optional<BankSlipJPAEntity> bankSlipJPAEntity = Optional.of(EntitiesTransformation.convertPOJOEntityToJPAEntity(createBankSlipEntity(Optional.of(ID_TO_PAY), LocalDate.now(), CUSTOMER, 111000L, StatusEnum.PAID.toString())));
+		BDDMockito.given(this.bankSlipRepository.findById(Mockito.anyString())).willReturn(bankSlipJPAEntity); 
+
+
 		//calling and validating the rest method response
 		mvc.perform(MockMvcRequestBuilders.put(URL_BASE+ID_TO_PAY+"/pay")
 				.contentType(MediaType.APPLICATION_JSON)
@@ -92,15 +107,14 @@ public class PayBankSlipTest {
 		.andExpect(status().isUnprocessableEntity())
 		.andExpect(content().string(startsWith(RESTErrorMessages.PAY_BANKSLIP_PAYED_STATUS_ERROR.getMessage())));
 	}
-	
+
 	@Test
 	public void PayBankSlipErrorInvalidStatusCanceled() throws Exception {
 
-		//Creating a new bankSlip to cancel
-		BankSlipJPAEntity bankSlipJPAEntity = bankSlipsService.persist(EntitiesTransformation.convertPOJOEntityToJPAEntity(createBankSlipEntity(ID_TO_PAY, LocalDate.now(), CUSTOMER,111000L, StatusEnum.PENDING.toString())));
-		bankSlipJPAEntity.setStatus(StatusEnum.CANCELED.toString());
-		bankSlipsService.persist(bankSlipJPAEntity);
-		
+		//Creating a new bankSlip	
+		Optional<BankSlipJPAEntity> bankSlipJPAEntity = Optional.of(EntitiesTransformation.convertPOJOEntityToJPAEntity(createBankSlipEntity(Optional.of(ID_TO_PAY), LocalDate.now(), CUSTOMER, 111000L, StatusEnum.CANCELED.toString())));
+		BDDMockito.given(this.bankSlipRepository.findById(Mockito.anyString())).willReturn(bankSlipJPAEntity); 
+
 		//calling and validating the rest method response
 		mvc.perform(MockMvcRequestBuilders.put(URL_BASE+ID_TO_PAY+"/pay")
 				.contentType(MediaType.APPLICATION_JSON)
@@ -108,10 +122,10 @@ public class PayBankSlipTest {
 		.andExpect(status().isUnprocessableEntity())
 		.andExpect(content().string(startsWith(RESTErrorMessages.PAY_BANKSLIP_CANCELED_STATUS_ERROR.getMessage())));
 	}
-	
-	private BankSlip createBankSlipEntity(String id, LocalDate dueDate, String customer, long totalInCents, String status) {
+
+	private BankSlip createBankSlipEntity(Optional<String> id, LocalDate dueDate, String customer, long totalInCents, String status) {
 		BankSlip BankSlip = new BankSlip();
-		BankSlip.setId(Optional.of(id));
+		BankSlip.setId(id);
 		BankSlip.setDueDate(dateFormatter.format(dueDate));
 		BankSlip.setCustomer(customer);
 		BankSlip.setTotalInCents(totalInCents);
