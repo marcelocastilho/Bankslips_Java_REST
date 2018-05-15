@@ -1,4 +1,4 @@
-package com.bankslips.rest.jwtme.security;
+package com.bankslips.rest.jwtme.security.filter;
 
 import java.io.IOException;
 
@@ -11,6 +11,8 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.GenericFilterBean;
+
+import com.bankslips.rest.jwtme.security.TokenAuthenticationService;
 
 public class JWTAuthenticationFilter extends GenericFilterBean {
 

@@ -84,7 +84,7 @@ public class BankSlipsRestControler {
 
 		List<BankSlipJPAEntity> allBankSlipJPAEntity = this.bankSlipsService.getAll();
 
-		//TODO change this transformation using reflection or another lib
+		//TODO change this transformation using modelMapper
 		List<BankSlipResource> allBankSLips = new Vector<BankSlipResource>();
 		for (BankSlipJPAEntity JPABankSLip : allBankSlipJPAEntity) {
 			allBankSLips.add(new BankSlipResource(EntitiesTransformation.convertJPAEntityToPOJOEntity(JPABankSLip)));
